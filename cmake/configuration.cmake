@@ -56,11 +56,13 @@ else()
 endif()
 
 # other options
+option(FOONATHAN_MEMORY_STL_NODE_SIZES
+    "whether or not to determine node sizes for STL containers during cmake configuration" OFF)
 option(FOONATHAN_MEMORY_CHECK_ALLOCATION_SIZE
-        "whether or not the size of the allocation will be checked" ON)
+    "whether or not the size of the allocation will be checked" ON)
 set(FOONATHAN_MEMORY_DEFAULT_ALLOCATOR heap_allocator CACHE STRING
     "the default implementation allocator for higher-level ones")
 option(FOONATHAN_MEMORY_EXTERN_TEMPLATE
     "whether or not common template instantiations are already provided by the library" ON)
 set(FOONATHAN_MEMORY_TEMPORARY_STACK_MODE 2 CACHE STRING
-     "set to 0 to disable the per-thread stack completely, to 1 to disable the nitfy counter and to 2 to enable everything")
+    "set to 0 to disable the per-thread stack completely, to 1 to disable the nitfy counter and to 2 to enable everything")

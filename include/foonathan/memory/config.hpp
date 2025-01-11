@@ -11,7 +11,7 @@
 
 #if !defined(DOXYGEN)
 #define FOONATHAN_MEMORY_IMPL_IN_CONFIG_HPP
-#include "config_impl.hpp"
+#include "foonathan/memory/config_impl.hpp"
 #undef FOONATHAN_MEMORY_IMPL_IN_CONFIG_HPP
 #endif
 

@@ -47,8 +47,7 @@ set(header
         ${header_path}/temporary_allocator.hpp
         ${header_path}/threading.hpp
         ${header_path}/tracking.hpp
-        ${header_path}/virtual_memory.hpp
-        ${CMAKE_CURRENT_BINARY_DIR}/container_node_sizes_impl.hpp)
+        ${header_path}/virtual_memory.hpp)
 
 set(src
         detail/align.cpp
@@ -72,13 +71,16 @@ set(src
         temporary_allocator.cpp
         virtual_memory.cpp)
 
-# configure config file
-configure_file("config.hpp.in" "${CMAKE_CURRENT_BINARY_DIR}/config_impl.hpp")
-
 # generate container_node_sizes.hpp if necessary
-if(NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR}/container_node_sizes_impl.hpp)
-    get_container_node_sizes(${CMAKE_CURRENT_BINARY_DIR}/container_node_sizes_impl.hpp)
+if (FOONATHAN_MEMORY_STL_NODE_SIZES)
+    if(NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR}/foonathan/memory/container_stl_node_sizes_impl.hpp)
+        get_container_node_sizes(${CMAKE_CURRENT_BINARY_DIR}/foonathan/memory/container_stl_node_sizes_impl.hpp)
+    endif()
+    set(header ${header} ${CMAKE_CURRENT_BINARY_DIR}/foonathan/memory/container_stl_node_sizes_impl.hpp)
 endif()
+
+# configure config file
+configure_file("config.hpp.in" "${CMAKE_CURRENT_BINARY_DIR}/foonathan/memory/config_impl.hpp")
 
 add_library(foonathan_memory ${detail_header} ${header} ${src})
 target_include_directories(foonathan_memory PUBLIC $<BUILD_INTERFACE:${FOONATHAN_MEMORY_SOURCE_DIR}/include/> # for client in subdirectory
@@ -128,7 +130,9 @@ write_basic_package_version_file(${version_file}
                                  COMPATIBILITY AnyNewerVersion)
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/config_impl.hpp DESTINATION ${FOONATHAN_MEMORY_INC_INSTALL_DIR}/foonathan/memory/)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/container_node_sizes_impl.hpp DESTINATION ${FOONATHAN_MEMORY_INC_INSTALL_DIR}/foonathan/memory/detail)
+if (NOT FOONATHAN_MEMORY_STL_NODE_SIZES)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/container_stl_node_sizes_impl.hpp DESTINATION ${FOONATHAN_MEMORY_INC_INSTALL_DIR}/foonathan/memory/detail)
+endif()
 install(FILES ${header}                                   DESTINATION ${FOONATHAN_MEMORY_INC_INSTALL_DIR}/foonathan/memory)
 install(FILES ${detail_header}                            DESTINATION ${FOONATHAN_MEMORY_INC_INSTALL_DIR}/foonathan/memory/detail)
 install(FILES ${version_file}                             DESTINATION ${FOONATHAN_MEMORY_CMAKE_CONFIG_INSTALL_DIR})

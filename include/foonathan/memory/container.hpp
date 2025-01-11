@@ -240,9 +240,10 @@ namespace foonathan
 
 #if !defined(DOXYGEN)
 
+
+#if FOONATHAN_MEMORY_STL_NODE_SIZES
 #include "detail/container_node_sizes.hpp"
 
-#if !defined(FOONATHAN_MEMORY_NO_NODE_SIZE)
         /// \exclude
         namespace detail
         {
@@ -352,7 +353,7 @@ namespace foonathan
 /// @}
 #endif
 
-#if !defined(FOONATHAN_MEMORY_NO_NODE_SIZE)
+#if FOONATHAN_MEMORY_STL_NODE_SIZES
         /// The node size required by \ref allocate_shared.
         /// \note This is similar to \ref shared_ptr_node_size but takes a
         /// \concept{concept_rawallocator,RawAllocator} instead.
