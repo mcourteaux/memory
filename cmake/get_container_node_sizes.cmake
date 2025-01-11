@@ -191,5 +191,5 @@ struct ${container}_node_size
     # file and write them to the output file; and will only rewrite
     # the file and update its timestamp if the contents have changed.
     # The only variable that will be substituted is NODE_SIZE_CONTENTS
-    configure_file("${_THIS_MODULE_DIR}/container_node_sizes_impl.hpp.in" ${outfile})
+    configure_file("${_THIS_MODULE_DIR}/container_stl_node_sizes_impl.hpp.in" ${outfile})
 endfunction()

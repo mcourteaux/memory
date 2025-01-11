@@ -12,7 +12,7 @@ _foonathan_add_example(allocator_storage)
 _foonathan_add_example(joint_allocation)
 _foonathan_add_example(taking_allocators)
 
-if(NOT FOONATHAN_MEMORY_NO_NODE_SIZE)
+if(FOONATHAN_MEMORY_STL_NODE_SIZES)
 _foonathan_add_example(tracking)
 _foonathan_add_example(using_allocators)
 endif()
