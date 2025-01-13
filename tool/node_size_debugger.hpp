@@ -16,6 +16,8 @@
 #include <unordered_map>
 #include <unordered_set>
 
+extern bool report_allocations;
+
 template <typename TestType, class Debugger>
 struct node_size_storage
 {
@@ -56,6 +58,15 @@ public:
     {
         if (!std::is_same<T, TestType>::value)
             node_size() = std::max(node_size(), sizeof(T));
+    }
+
+    T* allocate(std::size_t count)
+    {
+        if (report_allocations)
+        {
+            std::printf("node_size_debugger<T = %s>::allocate(count=%zu): sizeof(T) = %zu\n", typeid(T).name(), count, sizeof(T));
+        }
+        return std::allocator<T>::allocate(count);
     }
 
     static std::size_t& node_size()
@@ -318,6 +329,10 @@ struct debug_shared_ptr_stateful
 template <typename T, class Debugger>
 std::size_t debug_single(Debugger debugger)
 {
+    if (report_allocations)
+    {
+        std::printf("\nT=%s Debugger=%s\n", typeid(T).name(), typeid(Debugger).name());
+    }
     return debugger.template debug<T>();
 }
 
