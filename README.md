@@ -219,6 +219,55 @@ struct raw_allocator
 A `RawAllocator` only needs to be moveable, all `Allocator` classes are `RawAllocators` too.
 Classes not providing the interface can specialize the `allocator_traits`, read more about [writing allocators here](https://memory.foonathan.net/md_doc_writing_allocators.html) or about the technical details of the [concept here](https://memory.foonathan.net/md_doc_concepts.html).
 
+## A word of caution regarding the STL containers and custom allocators
+
+Allocators in STL are required to be "rebindable", which means that an allocator to allocate `int`'s should also be able to allocate `std::tuple<std::map<std::string, int>, std::array<int, 5>>`.
+   This means you cannot make any allocator that is specialized to allocate a specific type of struct (with its given alignment and size constraints), because that very same allocator needs to be rebindable to allocate something else.
+ STL container types take an allocator, but that allocator is internally potentially rebound to allocate all sorts of structs.
+Practically, when you pass an `std::allocator<std::string>` to an `std::set<std::string>` as its allocator, it internally might rebind that to allocate nodes of a Red-Black tree, which are bigger than `sizeof(std::string)`.
+This is an important mechanism inside those STL containers that prevent us to make nice and elegant allocators for these container types, because we don't know what they will allocate.
+A memory pool with a simple free-list mechanism is off the table.
+This project makes an attempt at making it possible to use these custom allocators with these STL container types.
+It makes use of hacks to figure out the biggest struct any container would ever allocate, and consider that as _the_ size.
+This is often a pessimization of reality: it can be the container allocates 99% of the time small structs and 1% of the time big structs.
+The size of the big struct would be used for _all_ allocations when using a fixed-size allocator.
+This is demonstrated when you run the `tool/nodesize_dbg` tool with `--report-allocations`.
+Here is an example output, generated on G++ 14, for an `std::unordered_set<int>`:
+```
+T=i Debugger=19debug_unordered_set
+node_size_debugger<T = NSt8__detail10_Hash_nodeIiLb1EEE>::allocate(count=1): sizeof(T) = 24
+node_size_debugger<T = PNSt8__detail15_Hash_node_baseE>::allocate(count=13): sizeof(T) = 8
+```
+So, overall, relying on a fixed node-size for STL containers is a flawed idea.
+However, this mechanism is optionally available by enabling `FOONATHAN_MEMORY_STL_NODE_SIZES` in CMake.
+
+[@mcourteaux](https://github.com/mcourteaux/)'s opinion on this:
+
+> The STL allocators should have not been required to be rebindable by default.
+> Additionally, STL containers should take multiple allocators if they wish to allocate things of multiple sizes.
+> The default `std::allocator` could be rebindable, and supports allocating all types.
+> Now, when a custom allocator is deseriable for an STL container type, you know exactly which allocators need to be supplied.
+> In case your custom allocator can allocate variable sizes (such as making an STL allocator to wrap mimalloc), that allocator can be rebindable to any allocator (as mimalloc supports allocating any size).
+>
+> So, an STL container which has to allocate some internal node could have a signature like this:
+>
+> ```cpp
+> template <typename T>
+> struct some_container_node; // Made-up example of one internal struct type.
+>
+> template <typename T>
+> struct some_container_lookup; // Made-up example of another internal struct type.
+> 
+> template<typename T,
+>          typename NodeAllocator = std::allocator<some_container_node<T>>,
+>          typename LookupAllocator = typename NodeAllocator::rebind<some_container_lookup<T>>::other>
+> struct some_container;
+> ```
+>
+> Now, you clearly have the ability to provide two separate allocators that allocate fixed-sized portions of memory.
+
+
+
 ## Acknowledgements
 
 This project is greatly supported by my [patrons](https://patreon.com/foonathan).
