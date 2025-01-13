@@ -12,6 +12,7 @@
 
 const char* const exe_name = "nodesize_dbg";
 const std::string exe_spaces(std::strlen(exe_name), ' ');
+bool report_allocations = false;
 
 struct simple_serializer
 {
@@ -44,6 +45,26 @@ struct verbose_serializer
     }
 
     void suffix() const {}
+};
+
+struct report_allocations_serializer
+{
+    std::ostream& out;
+
+    void prefix() const {
+      report_allocations = true;
+    }
+
+    void operator()(const debug_result& result) const
+    {
+        out << result.container_name << ":\n";
+        for (auto pair : result.node_sizes)
+            out << '\t' << pair.first << '=' << pair.second << '\n';
+    }
+
+    void suffix() const {
+      report_allocations = false;
+    }
 };
 
 struct code_serializer
@@ -160,6 +181,7 @@ void print_help(std::ostream& out)
     out << "   --simple\tprints node sizes in the form 'alignment=base-node-size'\n";
     out << "   --verbose\tprints node sizes in a more verbose form\n";
     out << "   --code\tgenerates C++ code to obtain the node size\n";
+    out << "   --report-allocations\thave the debug allocator to print out all allocations\n";
     out << "   --help\tdisplay this help and exit\n";
     out << "   --version\toutput version information and exit\n";
     out << '\n';
@@ -203,6 +225,8 @@ int main(int argc, char* argv[])
         serialize(simple_serializer{std::cout});
     else if (argv[1] == std::string("--verbose"))
         serialize(verbose_serializer{std::cout});
+    else if (argv[1] == std::string("--report-allocations"))
+        serialize(report_allocations_serializer{std::cout});
     else if (argv[1] == std::string("--code"))
     {
         std::size_t   tab_width = 4u;
