@@ -266,6 +266,9 @@ However, this mechanism is optionally available by enabling `FOONATHAN_MEMORY_ST
 >
 > Now, you clearly have the ability to provide two separate allocators that allocate fixed-sized portions of memory.
 
+The [EASTL] motivation page provides a good summary of the problem:
+
+> Allocators are rebound by containers to one or more additional types -- types which the user cannot know in any portable way. Thus the author of an allocator cannot know what it will actually be asked to allocate and construct. It is ironic that user-supplied allocators to STL containers in practice don't allocate objects of the user-specified type. It is unfortunate that there is no portable way for the container user or allocator implementor to know what the allocator will be asked to allocator or what it will be rebound to. This somewhat defeats the purpose of the allocator being templated on some type. 
 
 
 ## Acknowledgements
